@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>历史pb查询助手 by arsenelv</title>
+  <style>
+	body{ font-size:14px; line-height:24px;} 
+	#sign {font-family:"FZShuTi"}
+	div {padding: 10px;}
+	div#views {padding: 10px; margin-top: 30px;}
+  </style>
+  <script src='http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js'></script>
+ </head>
+ <body>
+	<div>
+	<table>
+		<tr>
+			<td>历史回溯天数：</td><td><input type='text' id="histroyDays" /></td>
+		</tr>
+		<tr>
+			<td>分组查看：</td><td>
+				<input type='radio' name='stockType' value='holdings'>持仓股</input>
+
+			</td>
+		</tr>
+		<tr>
+			<td>个股历史数据比较：</td>
+			<td>
+				<span>输入一个或多个代码，用逗号隔开，可用于比较</span><input type='input' id="customStocks" style='width:300px;' value="000858,600519,000568"/>
+				<button id='btnSubmit'>提交</button>
+			</td>
+		</tr>
+		<tr>
+			<td colspan='2' id="sign">by arsenelv 2016/06</td>
+		</tr>
+	</table>
+	</div>
+	<div id="views"></div>
+ </body>
+ <script>
+	$(function(){
+		'use strict';
+		//////////////////////////////用户自定义参数//////////////////////////////
+		var stocksGroup = {	// 自选股分组配置
+			// 持仓股
+			holdings : ['600219']
+		}
+		
+		var defHistroyDays = 1800;	// 默认历史回溯天数
+		//////////////////////////////////////////////////////////////////////////
+
+
+
+		window.Constants = {
+			holdings : '持仓股',
+			
+			
+		}
+
+		var ViewBuilder = function(stockType){
+			this.stockType = stockType;
+		};
+		ViewBuilder.prototype.build = function(){
+			$("#views").empty();
+		}
+
+		// 普通的页面处理器
+		var SimpleViewBuilder = function(stockType){
+			ViewBuilder.call(this, stockType);
+		};
+		SimpleViewBuilder.prototype = new ViewBuilder();
+		SimpleViewBuilder.prototype.build = function(){
+			this.constructor.prototype.build()
+			var stockArr = stocksGroup[this.stockType];
+			if(stockArr.length < 1){
+				$("#views").html("<span style='color:red;'>请用文本编辑器打开，修改用户自定义参数，配置" + Constants[this.stockType] + "</span>");
+				return;
+			}
+			$.each(stockArr, function(i, stock){
+			
+			
+			
+			
+			
+			$("#views").append("<iframe src='http://biz.finance.sina.com.cn/company/compare/img_compare.php?stock_code="+stock+"&type=mgjzc ' style='width:650px;height:450px;'></iframe>");	
+										
+										
+
+			
+							$("#views").append("<iframe src='http://biz.finance.sina.com.cn/company/compare/img_compare.php?stock_code="+stock+"&type=jzcsyl ' style='width:650px;height:450px;'></iframe>");	
+							
+							
+				$("#views").append("<iframe src='http://biz.finance.sina.com.cn/company/compare/img_sjl_compare.php?stock_code="+stock+",&limit="+$("#histroyDays").val()+"' style='width:650px;height:450px;'></iframe>");
+
+				
+							$("#views").append("<iframe src='http://biz.finance.sina.com.cn/company/compare/img_syl_compare.php?stock_code="+stock+",&limit="+$("#histroyDays").val()+"' style='width:650px;height:450px;'></iframe>");
+							
+
+							
+							
+			});
+		}
+
+		// 比较的页面处理器
+		var CompareViewBuilder = function(stockType){}
+		CompareViewBuilder.prototype = new ViewBuilder();
+		CompareViewBuilder.prototype.build = function(){
+			this.constructor.prototype.build()
+			var customStocksStr = $.trim($("#customStocks").val());
+			var customStocks = customStocksStr.split(',');
+			if(customStocksStr == ''  || customStocks.length < 1){
+				$("#views").html("<span style='color:red;'>请在输入框填入股票代码</span>");
+				return;
+			}
+			$("#views").append("<iframe src='http://biz.finance.sina.com.cn/company/compare/img_sjl_compare.php?stock_code="+customStocks+",&limit="+$("#histroyDays").val()+"' style='width:650px;height:450px;'></iframe>");
+		}
+
+		var page = {
+			init : {
+				bindEvents : function(){
+					$("input[name=stockType]").click(function(){
+						var stockType = this.value;
+						new SimpleViewBuilder(stockType).build();
+					});
+					$("#btnSubmit").click(function(){
+						new CompareViewBuilder().build();
+					});
+				}
+			},
+			initialize : function(){
+				this.init.bindEvents();
+				$("input[name=stockType]:first").click();
+				$("#histroyDays").val(defHistroyDays);
+			}
+		};
+		page.initialize();
+	});
+ </script>
+</html>
